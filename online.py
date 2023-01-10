@@ -8,6 +8,7 @@ import LiveStreamingEnv.load_trace as load_trace
 import matplotlib.pyplot as plt
 import numpy as np
 import ABR
+import ABR_
 
 # path setting
 fig1 = plt.figure(dpi=300, figsize=(20, 12), constrained_layout=True)
@@ -29,13 +30,13 @@ def test(user_id):
     # LogFile_Path = "/home/game/log/"                #log file trace path setting,
 
     TRAIN_TRACES = './network_trace/'  # train trace path setting,
-    #video_size_file = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'  # video trace path setting,
-    video_size_file = './video_trace/Fengtimo_2018_11_3/frame_trace_'  # video trace path setting,
-    video_size_file = './video_trace/YYF_2018_08_12/frame_trace_'  # video trace path setting,
+    video_size_file = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'  # video trace path setting,
+    # video_size_file = './video_trace/Fengtimo_2018_11_3/frame_trace_'  # video trace path setting,
+    # video_size_file = './video_trace/YYF_2018_08_12/frame_trace_'  # video trace path setting,
     LogFile_Path = "./log/"  # log file trace path setting,
     # Debug Mode: if True, You can see the debug info in the logfile
     #             if False, no log ,but the training speed is high
-    Data_Path = './data/'
+    Data_Path = './data_/'
     DEBUG = False
     # load the trace
     all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(TRAIN_TRACES)
@@ -221,49 +222,31 @@ def test(user_id):
             S_cdn_flag = [0] * past_frame_num
 
             if position < 5:
-                with open(Data_Path+'bit_rate'+str(position)+'.csv', 'a', encoding='utf-8') as f1:
-                    f1.write('bitrate\n')
-                    for i in range(len(list_bit_rate)):
-                        info = str(list_bit_rate[i]) + '\n'
-                        f1.write(info)
-                    f1.flush()
-                with open(Data_Path+'delay'+str(position)+'.csv', 'a', encoding='utf-8') as f2:
-                    f2.write('delay\n')
-                    for i in range(len(list_delay)):
-                        info = str(list_delay[i]) + '\n'
-                        f2.write(info)
-                    f2.flush()
-                with open(Data_Path+'rebuf'+str(position)+'.csv', 'a', encoding='utf-8') as f3:
-                    f3.write('rebuf\n')
-                    for i in range(len(list_rebuf)):
-                        info = str(list_rebuf[i]) + '\n'
-                        f3.write(info)
-                    f3.flush()
-                with open(Data_Path+'buffer_size'+str(position)+'.csv', 'a', encoding='utf-8') as f4:
-                    f4.write('buffer_size\n')
-                    for i in range(len(list_bufferSize)):
-                        info = str(list_bufferSize[i]) + '\n'
-                        f4.write(info)
-                    f4.flush()
-
-                # print("平均码率", np.average(list_bit_rate))
-                # ax1 = fig1.add_subplot(2, 2, position)
-                # ax1.plot(list_bit_rate)
-                # ax1.axhline(y=np.average(list_bit_rate), color='black', linestyle='dashed')
-                #
-                # print("平均延时", np.average(list_delay), "s")
-                # ax2 = fig2.add_subplot(2, 2, position)
-                # ax2.plot(list_delay)
-                # ax2.axhline(y=np.average(list_delay), color='black', linestyle='dashed')
-                # print("总卡顿时间", np.sum(list_rebuf), "s")
-                # ax3 = fig3.add_subplot(2, 2, position)
-                # ax3.plot(list_rebuf, label="")
-                # ax3.axhline(y=np.average(list_rebuf), color='black', linestyle='dashed')
-                # print("平均缓存区", np.average(list_bufferSize), "s")
-                # ax4 = fig4.add_subplot(2, 2, position)
-                # ax4.plot(list_bufferSize, label="平均缓存区")
-                # ax4.axhline(y=np.average(list_bufferSize), color='black', linestyle='dashed')
-                # print("总卡顿次数", times_rebuf, "次")
+                # with open(Data_Path+'bit_rate'+str(position)+'.csv', 'a', encoding='utf-8') as f1:
+                #     f1.write('bitrate\n')
+                #     for i in range(len(list_bit_rate)):
+                #         info = str(list_bit_rate[i]) + '\n'
+                #         f1.write(info)
+                #     f1.flush()
+                # with open(Data_Path+'delay'+str(position)+'.csv', 'a', encoding='utf-8') as f2:
+                #     f2.write('delay\n')
+                #     for i in range(len(list_delay)):
+                #         info = str(list_delay[i]) + '\n'
+                #         f2.write(info)
+                #     f2.flush()
+                # with open(Data_Path+'rebuf'+str(position)+'.csv', 'a', encoding='utf-8') as f3:
+                #     f3.write('rebuf\n')
+                #     for i in range(len(list_rebuf)):
+                #         info = str(list_rebuf[i]) + '\n'
+                #         f3.write(info)
+                #     f3.flush()
+                # with open(Data_Path+'buffer_size'+str(position)+'.csv', 'a', encoding='utf-8') as f4:
+                #     f4.write('buffer_size\n')
+                #     for i in range(len(list_bufferSize)):
+                #         info = str(list_bufferSize[i]) + '\n'
+                #         f4.write(info)
+                #     f4.flush()
+                print("总卡顿次数", times_rebuf, "次")
 
                 times_rebuf = 0
                 list_rebuf.clear()
