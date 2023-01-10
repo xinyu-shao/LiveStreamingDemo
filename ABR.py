@@ -5,7 +5,7 @@ import numpy as np
 
 ACTOR_LR_RATE = 0.0001
 CRITIC_LR_RATE = 0.001
-NN_MODEL = './model/train/nn_model_ep_10.ckpt'
+NN_MODEL = './model/train/nn_model_ep_198.ckpt'
 S_DIM = 15
 A_DIM = 8
 BIT_RATE = [500.0,850.0,1200.0,1850.0]
