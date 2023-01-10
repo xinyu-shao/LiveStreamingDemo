@@ -5,10 +5,8 @@ import numpy as np
 
 ACTOR_LR_RATE = 0.0001
 CRITIC_LR_RATE = 0.001
-# NN_MODEL = "/home/team/就是这么皮/submit/results/nn_model_ep_72.ckpt"
-# NN_MODEL = "/root/mmgc/team/The World/submit/results/nn_model_ep_225.ckpt"
-NN_MODEL = './model/train/nn_model_ep_225.ckpt'
-S_DIM = 16
+NN_MODEL = './model/train/nn_model_ep_10.ckpt'
+S_DIM = 15
 A_DIM = 8
 BIT_RATE = [500.0,850.0,1200.0,1850.0]
 TARGET_BUFFER = [0.5, 1.0]
@@ -19,7 +17,7 @@ T = [0, 0, 0, 0, 1, 1, 1, 1]
 class Actor(object):
     def __init__(self, sess, n_features, n_actions, lr=0.001):
         self.sess = sess
-
+        tf.disable_eager_execution()
         self.s = tf.placeholder(tf.float32, [1, n_features], "state")
         self.a = tf.placeholder(tf.int32, None, "act")
         self.td_error = tf.placeholder(tf.float32, None, "td_error")  # TD_error

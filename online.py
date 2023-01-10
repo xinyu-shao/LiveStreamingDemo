@@ -2,12 +2,8 @@
     Author Dan Yang
     Time 2018-10-15
     For LiveStreaming Game'''
-# import the env from pip
 import LiveStreamingEnv.fixed_env as fixed_env
-# import fixed_env
 import LiveStreamingEnv.load_trace as load_trace
-# import matplotlib.pyplot as plt
-import time
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,7 +29,9 @@ def test(user_id):
     # LogFile_Path = "/home/game/log/"                #log file trace path setting,
 
     TRAIN_TRACES = './network_trace/'  # train trace path setting,
-    video_size_file = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'  # video trace path setting,
+    #video_size_file = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'  # video trace path setting,
+    video_size_file = './video_trace/Fengtimo_2018_11_3/frame_trace_'  # video trace path setting,
+    video_size_file = './video_trace/YYF_2018_08_12/frame_trace_'  # video trace path setting,
     LogFile_Path = "./log/"  # log file trace path setting,
     # Debug Mode: if True, You can see the debug info in the logfile
     #             if False, no log ,but the training speed is high

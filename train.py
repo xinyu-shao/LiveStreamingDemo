@@ -70,8 +70,8 @@ with tf.Session(config=config) as sess:
         saver.restore(sess, nn_model)
         print("Model restored.")
 
-    # model training, just train 400 turn, avoid overfitting
-    for turn in range(400):
+    # model training, just train 200 turn, avoid overfitting
+    for turn in range(200):
         net_env = fixed_env.Environment(all_cooked_time=all_cooked_time,
                                         all_cooked_bw=all_cooked_bw,
                                         random_seed=random_seed,
