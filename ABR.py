@@ -1,6 +1,5 @@
 import tensorflow._api.v2.compat.v1 as tf
 import numpy as np
-# from helper import show, searchIndex
 
 
 ACTOR_LR_RATE = 0.0001

@@ -6,7 +6,18 @@ from LiveStreamingEnv import load_trace
 import os
 
 
-from helper import get_tend, show
+def get_tend(thr_record):
+    ll_thr, l_thr, thr = thr_record[-3:]
+
+    if l_thr >= ll_thr:
+        if thr >= l_thr:
+            return 0.264
+        return 0.205
+    if l_thr < ll_thr:
+        if thr >= l_thr:
+            return 0.370
+        return 0.738
+
 
 # basic parameters
 last_bit_rate = 0
@@ -14,7 +25,6 @@ bit_rate = 0
 target_buffer = 0
 latency_limit = 2.0
 random_seed = 42
-
 
 # selection
 BIT_RATE = [500.0, 850.0, 1200.0, 1850.0]
@@ -31,11 +41,10 @@ reward_all_sum = 0
 frame_time_len = 0.04
 
 # qoe calculation
-SMOOTH_PENALTY= 0.02
+SMOOTH_PENALTY = 0.02
 REBUF_PENALTY = 1.85
 LANTENCY_PENALTY = 0.005
 SKIP_PENALTY = 0.5
-
 
 # data settings
 NETWORK_TRACES = './network_trace/'
@@ -51,18 +60,17 @@ if not os.path.isdir(MODEL_DIR):
 all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(NETWORK_TRACES)
 
 # neural network parameters
-S_DIM = 15      # number of state
-A_DIM = 8       # number of action
-LR_A = 0.0001   # actor's learning rate
-LR_C = 0.001    # critic's learning rate
-
+S_DIM = 15  # number of state
+A_DIM = 8  # number of action
+LR_A = 0.0001  # actor's learning rate
+LR_C = 0.001  # critic's learning rate
 
 # model
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
-    actor = ac.Actor(sess, n_features=S_DIM, n_actions=A_DIM, lr = LR_A)
-    critic = ac.Critic(sess, n_features=S_DIM, lr = LR_C)
+    actor = ac.Actor(sess, n_features=S_DIM, n_actions=A_DIM, lr=LR_A)
+    critic = ac.Critic(sess, n_features=S_DIM, lr=LR_C)
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver(max_to_keep=400)
     nn_model = NN_MODEL
@@ -77,7 +85,7 @@ with tf.Session(config=config) as sess:
                                         random_seed=random_seed,
                                         logfile_path=LOG_FILE_PATH,
                                         VIDEO_SIZE_FILE=VIDEO_TRACES,
-                                        Debug = DEBUG)
+                                        Debug=DEBUG)
 
         learning_turn = 0
         video_count = 0
@@ -103,7 +111,7 @@ with tf.Session(config=config) as sess:
 
             if not cdn_flag and time_interval:
                 thr = send_data_size / time_interval / 1000000
-                if abs(thr - thr_record[-1]) > 10**-4:
+                if abs(thr - thr_record[-1]) > 10 ** -4:
                     thr_record = np.roll(thr_record, -1, axis=0)
                     thr_record[-1] = thr
 
@@ -195,7 +203,3 @@ with tf.Session(config=config) as sess:
                 target_buffer = 0
                 skip_time = []
                 rebuf_time = []
-
-
-
-
