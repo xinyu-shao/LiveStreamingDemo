@@ -62,7 +62,7 @@ def test(user_id):
                                     logfile_path=LogFile_Path,
                                     VIDEO_SIZE_FILE=video_size_file,
                                     Debug=DEBUG)
-    abr = ABR.Algorithm()
+    abr = ABR_.Algorithm()
     abr_init = abr.Initial()
 
     BIT_RATE = [500.0, 850.0, 1200.0, 1850.0]  # kpbs
