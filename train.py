@@ -1,10 +1,11 @@
 import tensorflow._api.v2.compat.v1 as tf
 import numpy as np
+import pandas as pd
 import train_net as ac
 from LiveStreamingEnv import fixed_env
 from LiveStreamingEnv import load_trace
 import os
-
+from statsmodels.tsa.ar_model import AutoReg
 
 def get_tend(thr_record):
     ll_thr, l_thr, thr = thr_record[-3:]
@@ -57,6 +58,9 @@ NN_MODEL = None
 if not os.path.isdir(MODEL_DIR):
     os.makedirs(MODEL_DIR)
 
+with open(RESULT, 'a', encoding='utf-8') as f:
+    f.write('turn,qoe\n')
+
 all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(NETWORK_TRACES)
 
 # neural network parameters
@@ -89,7 +93,7 @@ with tf.Session(config=config) as sess:
 
         learning_turn = 0
         video_count = 0
-        thr_record = np.zeros((4))
+        thr_record = [0.68,2.54,2.22,1.78]
         skip_time = []
         rebuf_time = []
         while True:

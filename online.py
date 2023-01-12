@@ -32,7 +32,7 @@ def test(user_id):
     LogFile_Path = "./log/"  # log file trace path setting,
     # Debug Mode: if True, You can see the debug info in the logfile
     #             if False, no log ,but the training speed is high
-    Data_Path = './data_/'
+    Data_Path = './data/'
     DEBUG = False
     # load the trace
     all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(TRAIN_TRACES)
@@ -94,15 +94,15 @@ def test(user_id):
     S_cdn_flag = [0] * past_frame_num
     # params setting
 
-    # position = 0
-    # list_bit_rate = []
-    # list_delay = []
-    # list_rebuf = []
-    # list_bufferSize = []
-    # sum_rebuf = 0
-    # S_Gop_delay = []
-    # S_Gop_rebuf = []
-    # S_Gop_bufferSize = []
+    position = 0
+    list_bit_rate = []
+    list_delay = []
+    list_rebuf = []
+    list_bufferSize = []
+    sum_rebuf = 0
+    S_Gop_delay = []
+    S_Gop_rebuf = []
+    S_Gop_bufferSize = []
 
     while True:
         reward_frame = 0
@@ -222,41 +222,40 @@ def test(user_id):
             S_buffer_flag = [0] * past_frame_num
             S_cdn_flag = [0] * past_frame_num
 
-            # list_bit_rate.clear()
-            # if position < 5:e
-            #     # with open(Data_Path+'bit_rate'+str(position)+'.csv', 'a', encoding='utf-8') as f1:
-            #     #     f1.write('bitrate\n')
-            #     #     for i in range(len(list_bit_rate)):
-            #     #         info = str(list_bit_rate[i]) + '\n'
-            #     #         f1.write(info)
-            #     #     f1.flush()
-            #     # with open(Data_Path+'delay'+str(position)+'.csv', 'a', encoding='utf-8') as f2:
-            #     #     f2.write('delay\n')
-            #     #     for i in range(len(list_delay)):
-            #     #         info = str(list_delay[i]) + '\n'
-            #     #         f2.write(info)
-            #     #     f2.flush()
-            #     # with open(Data_Path+'rebuf'+str(position)+'.csv', 'a', encoding='utf-8') as f3:
-            #     #     f3.write('rebuf\n')
-            #     #     for i in range(len(list_rebuf)):
-            #     #         info = str(list_rebuf[i]) + '\n'
-            #     #         f3.write(info)
-            #     #     f3.flush()
-            #     # with open(Data_Path+'buffer_size'+str(position)+'.csv', 'a', encoding='utf-8') as f4:
-            #     #     f4.write('buffer_size\n')
-            #     #     for i in range(len(list_bufferSize)):
-            #     #         info = str(list_bufferSize[i]) + '\n'
-            #     #         f4.write(info)
-            #     #     f4.flush()
-            #     print("总卡顿次数", times_rebuf, "次")
-            #
-            #     times_rebuf = 0
-            #     list_rebuf.clear()
-            #     list_delay.clear()
-            #     list_bufferSize.clear()
-            #     list_bit_rate.clear()
+            if position < 5:
+                with open(Data_Path+'bit_rate'+str(position)+'.csv', 'a', encoding='utf-8') as f1:
+                    f1.write('bitrate\n')
+                    for i in range(len(list_bit_rate)):
+                        info = str(list_bit_rate[i]) + '\n'
+                        f1.write(info)
+                    f1.flush()
+                with open(Data_Path+'delay'+str(position)+'.csv', 'a', encoding='utf-8') as f2:
+                    f2.write('delay\n')
+                    for i in range(len(list_delay)):
+                        info = str(list_delay[i]) + '\n'
+                        f2.write(info)
+                    f2.flush()
+                with open(Data_Path+'rebuf'+str(position)+'.csv', 'a', encoding='utf-8') as f3:
+                    f3.write('rebuf\n')
+                    for i in range(len(list_rebuf)):
+                        info = str(list_rebuf[i]) + '\n'
+                        f3.write(info)
+                    f3.flush()
+                with open(Data_Path+'buffer_size'+str(position)+'.csv', 'a', encoding='utf-8') as f4:
+                    f4.write('buffer_size\n')
+                    for i in range(len(list_bufferSize)):
+                        info = str(list_bufferSize[i]) + '\n'
+                        f4.write(info)
+                    f4.flush()
+                print("总卡顿次数", times_rebuf, "次")
 
-                # position = position + 1
+                times_rebuf = 0
+                list_rebuf.clear()
+                list_delay.clear()
+                list_bufferSize.clear()
+                list_bit_rate.clear()
+
+                position = position + 1
         reward_all += reward_frame
 
     return reward_all_sum/20

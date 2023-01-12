@@ -1,10 +1,10 @@
 import tensorflow._api.v2.compat.v1 as tf
 import numpy as np
-
+from statsmodels.tsa.ar_model import AutoReg
 
 ACTOR_LR_RATE = 0.0001
 CRITIC_LR_RATE = 0.001
-NN_MODEL = './model/train/nn_model_ep_198.ckpt'
+NN_MODEL = './model_/train/nn_model_ep_32.ckpt'
 S_DIM = 15
 A_DIM = 8
 BIT_RATE = [500.0,850.0,1200.0,1850.0]
@@ -144,7 +144,6 @@ def get_tend(thr_record):
         if thr >= l_thr:
             return 0.370
         return 0.738
-
 
 class Algorithm:
     def __init__(self):
