@@ -4,7 +4,7 @@ from statsmodels.tsa.ar_model import AutoReg
 
 ACTOR_LR_RATE = 0.0001
 CRITIC_LR_RATE = 0.001
-NN_MODEL = './model_/train/nn_model_ep_32.ckpt'
+NN_MODEL = './model/train/nn_model_ep_196.ckpt'
 S_DIM = 15
 A_DIM = 8
 BIT_RATE = [500.0,850.0,1200.0,1850.0]
@@ -165,7 +165,6 @@ class Algorithm:
             # restore neural net parameters
             if NN_MODEL is not None:  # NN_MODEL is the path to file
                 saver.restore(sess, NN_MODEL)
-                print("Testing model restored.")
 
             IntialVars = []
             IntialVars.append(actor)

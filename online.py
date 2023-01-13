@@ -152,10 +152,10 @@ def test(user_id):
         S_buffer_flag.append(buffer_flag)
         S_cdn_flag.append(cdn_flag)
 
-        # sum_rebuf += rebuf #总卡顿时间
-        # S_Gop_delay.append(end_delay)  # 时延
-        # S_Gop_rebuf.append(rebuf)  # 卡顿
-        # S_Gop_bufferSize.append(buffer_size)  # 缓存区
+        sum_rebuf += rebuf #总卡顿时间
+        S_Gop_delay.append(end_delay)  # 时延
+        S_Gop_rebuf.append(rebuf)  # 卡顿
+        S_Gop_bufferSize.append(buffer_size)  # 缓存区
         if buffer_size == 0:
             times_rebuf += 1
         # QOE setting
@@ -170,7 +170,7 @@ def test(user_id):
             # last_bit_rate
             last_bit_rate = bit_rate
 
-            # list_bit_rate.append(last_bit_rate)  # 记录gop码率
+            list_bit_rate.append(last_bit_rate)  # 记录gop码率
 
             # -------------------------------------------Your Althgrithom ------------------------------------------- 
             # which part is the althgrothm part ,the buffer based,
@@ -185,17 +185,17 @@ def test(user_id):
 
             # target_buffer 缓冲区阈值（Target Buffer），当视频播放产生卡顿后，只有当客户端缓冲区重新达到该缓冲区阈值时，才可以再次进行播放。
             # ------------------------------------------- End  -------------------------------------------
-            # if position < 5:
-            #     list_delay += S_Gop_delay
-            #     list_rebuf += S_Gop_rebuf
-            #     list_bufferSize += S_Gop_bufferSize
-            #     # list_delay.append(np.average(S_Gop_delay))
-            #     # list_rebuf.append(sum(S_Gop_rebuf))
-            #     # list_bufferSize.append(np.average(S_Gop_bufferSize))
-            #     # times_rebuf += S_Gop_bufferSize.count(0)
-            #     S_Gop_delay.clear()
-            #     S_Gop_rebuf.clear()
-            #     S_Gop_bufferSize.clear()
+            if position < 5:
+                list_delay += S_Gop_delay
+                list_rebuf += S_Gop_rebuf
+                list_bufferSize += S_Gop_bufferSize
+                # list_delay.append(np.average(S_Gop_delay))
+                # list_rebuf.append(sum(S_Gop_rebuf))
+                # list_bufferSize.append(np.average(S_Gop_bufferSize))
+                # times_rebuf += S_Gop_bufferSize.count(0)
+                S_Gop_delay.clear()
+                S_Gop_rebuf.clear()
+                S_Gop_bufferSize.clear()
         if end_of_video:
             print("video count", video_count, reward_all)
             # print("video count", video_count, reward_all, np.average(list_bit_rate))

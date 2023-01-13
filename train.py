@@ -76,7 +76,7 @@ with tf.Session(config=config) as sess:
     actor = ac.Actor(sess, n_features=S_DIM, n_actions=A_DIM, lr=LR_A)
     critic = ac.Critic(sess, n_features=S_DIM, lr=LR_C)
     sess.run(tf.global_variables_initializer())
-    saver = tf.train.Saver(max_to_keep=400)
+    saver = tf.train.Saver(max_to_keep=200)
     nn_model = NN_MODEL
     if nn_model is not None:
         saver.restore(sess, nn_model)
