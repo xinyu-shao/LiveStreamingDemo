@@ -70,7 +70,7 @@ Table of Contents
        else:
            reward_frame = -(REBUF_PENALTY * rebuf)
        if decision_flag or end_of_video:
-           # reward formate = play_time * BIT_RATE - 1.5 * rebuf - 0.005 * end_delay - 0.02 smooth
+           # reward formate = play_time * BIT_RATE - 1.5 * rebuf - lstm_train.csv.005 * end_delay - lstm_train.csv.02 smooth
            reward_frame -=  * SMOOTH_PENALTY * (abs(BIT_RATE[bit_rate] - BIT_RATE[last_bit_rate]) / 1000)
            
     ```

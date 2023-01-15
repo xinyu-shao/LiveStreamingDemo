@@ -1,23 +1,33 @@
+import joblib
 import tensorflow._api.v2.compat.v1 as tf
-import numpy as np
-import pandas as pd
+
 import train_net as ac
 from LiveStreamingEnv import fixed_env
 from LiveStreamingEnv import load_trace
 import os
-from statsmodels.tsa.ar_model import AutoReg
 
-def get_tend(thr_record):
-    ll_thr, l_thr, thr = thr_record[-3:]
+import pandas as pd
+import numpy as np
+from pandas import DataFrame
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
+import tensorflow._api.v2.compat.v1 as tf
 
-    if l_thr >= ll_thr:
-        if thr >= l_thr:
-            return 0.264
-        return 0.205
-    if l_thr < ll_thr:
-        if thr >= l_thr:
-            return 0.370
-        return 0.738
+
+def get_tend(input, model, scaler):
+    if input[0] == 0:
+        return 1.5
+    mydata = [[x] for x in input]
+    inputs = scaler.transform(mydata)
+    X_test = [inputs]
+    X_test = np.array(X_test)
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+
+    predict = model.predict(X_test)
+
+    predict = scaler.inverse_transform(predict)
+    return predict[0][0]
 
 
 # basic parameters
@@ -30,8 +40,8 @@ random_seed = 42
 # selection
 BIT_RATE = [500.0, 850.0, 1200.0, 1850.0]
 TARGET_BUFFER = [0.5, 1.0]
-B = [0, 1, 2, 3, 0, 1, 2, 3]
-T = [0, 0, 0, 0, 1, 1, 1, 1]
+B = [0, 1, 2, 3]
+T = [0, 0, 1, 1]
 DEBUG = False
 
 # qoe parameters, obviously we should use chunk_reward as our reward
@@ -48,11 +58,12 @@ LANTENCY_PENALTY = 0.005
 SKIP_PENALTY = 0.5
 
 # data settings
-NETWORK_TRACES = './network_trace/'
+NETWORK_TRACES = './train_network/'
 VIDEO_TRACES = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'
 LOG_FILE_PATH = './log'
-MODEL_DIR = './model/train/'
-RESULT = './model/train.csv'
+MODEL_DIR = './model_with_lstm/train/'
+RESULT = './model_with_lstm/train.csv'
+LSTM_MODEL_DIR = './lstm_model/'
 NN_MODEL = None
 
 if not os.path.isdir(MODEL_DIR):
@@ -64,8 +75,8 @@ with open(RESULT, 'a', encoding='utf-8') as f:
 all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(NETWORK_TRACES)
 
 # neural network parameters
-S_DIM = 15  # number of state
-A_DIM = 8  # number of action
+S_DIM = 10  # number of state
+A_DIM = 4  # number of actionb
 LR_A = 0.0001  # actor's learning rate
 LR_C = 0.001  # critic's learning rate
 
@@ -83,6 +94,48 @@ with tf.Session(config=config) as sess:
         print("Model restored.")
 
     # model training, just train 200 turn, avoid overfitting
+
+    tf.disable_eager_execution()
+    # 导入所需的包
+    file = "lstm_train.csv"
+    # 导入数据
+    data = pd.read_csv(file)
+    df = DataFrame(data)
+    new_data = pd.DataFrame(index=range(len(df)), columns=['time', 'through'])
+
+    for i in range(0, len(df)):
+        new_data['time'][i] = df['time'][i]
+        new_data['through'][i] = df['throughput'][i]
+    new_data.index = new_data.time
+    new_data.drop('time', axis=1, inplace=True)
+
+    dataset = new_data.values
+
+    train = dataset[0:4001]
+
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(dataset)
+
+    test = 4
+    x_train, y_train = [], []
+    for i in range(test, len(train)):
+        x_train.append(scaled_data[i - test:i, 0])
+        y_train.append(scaled_data[i, 0])
+
+    x_train, y_train = np.array(x_train), np.array(y_train)
+
+    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+
+    model = Sequential()  # 顺序模型，核心操作是添加layer（图层）
+    model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+    model.add(LSTM(units=50))
+    model.add(Dense(1))  # 全连接层
+
+    model.compile(loss='mean_squared_error', optimizer='adam')  # 选择优化器，并指定损失函数
+    model.fit(x_train, y_train, epochs=1, batch_size=1, verbose=2)
+
+    model.save(LSTM_MODEL_DIR + 'lstm.h5')
+    joblib.dump(scaler, LSTM_MODEL_DIR + 'scaler.joblib')
     for turn in range(200):
         net_env = fixed_env.Environment(all_cooked_time=all_cooked_time,
                                         all_cooked_bw=all_cooked_bw,
@@ -93,9 +146,10 @@ with tf.Session(config=config) as sess:
 
         learning_turn = 0
         video_count = 0
-        thr_record = [0.68,2.54,2.22,1.78]
+        thr_record = np.zeros(4)
         skip_time = []
         rebuf_time = []
+
         while True:
             reward_frame = 0
             time, time_interval, send_data_size, chunk_len, \
@@ -125,6 +179,7 @@ with tf.Session(config=config) as sess:
             chunk_reward += reward_frame
 
             if decision_flag or end_of_video:
+
                 reward_frame += -1 * SMOOTH_PENALTY * (abs(BIT_RATE[bit_rate] - BIT_RATE[last_bit_rate]) / 1000)
                 last_bit_rate = bit_rate
 
@@ -133,41 +188,28 @@ with tf.Session(config=config) as sess:
                 chunk_reward = 0
 
                 # get some feature parameters here, which need to calculate
-
+                predict_thr = get_tend(thr_record, model, scaler)
                 rebuf_time_sum = sum(rebuf_time)
                 rebuf_time = []
 
                 last_thr = thr_record[-1]
                 thr_mean = sum(thr_record) / len(thr_record)
-                thr_tend = get_tend(thr_record)
 
-                next_chunk_size = [0, 0, 0, 0]
-                for i in range(4):
-                    if len(cdn_has_frame[0]) < 25:
-                        next_chunk_size[i] = sum(cdn_has_frame[i]) + (25 - len(cdn_has_frame[i])) * BIT_RATE[i] * 40
-                    else:
-                        next_chunk_size[i] = sum(cdn_has_frame[i][:25])
                 # end
 
-                state = np.zeros((S_DIM))
+                state = np.zeros(S_DIM)
                 state[0] = buffer_size / 4.0
                 state[1] = target_buffer / 10.0
                 state[2] = buffer_flag / 2.0
                 state[3] = max(TARGET_BUFFER[target_buffer] - buffer_size, 0)
 
-                state[4] = (cdn_newest_id - download_id) / 40.0
-                state[5] = next_chunk_size[0] / 10000000.0
-                state[6] = next_chunk_size[1] / 10000000.0
-                state[7] = next_chunk_size[2] / 10000000.0
-                state[8] = next_chunk_size[3] / 10000000.0
+                state[4] = last_thr / 10.0
+                state[5] = thr_mean / 10.0
+                state[6] = predict_thr
 
-                state[9] = last_thr / 10.0
-                state[10] = thr_mean / 10.0
-                state[11] = thr_tend
-
-                state[12] = end_delay / 2.0
-                state[13] = rebuf_time_sum / 10.0
-                state[14] = bit_rate / 5.0
+                state[7] = end_delay / 2.0
+                state[8] = rebuf_time_sum / 10.0
+                state[9] = bit_rate / 5.0
 
                 # show(state)
 

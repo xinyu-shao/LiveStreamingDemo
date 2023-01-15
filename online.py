@@ -6,16 +6,8 @@ import LiveStreamingEnv.fixed_env as fixed_env
 import LiveStreamingEnv.load_trace as load_trace
 
 import matplotlib.pyplot as plt
-import numpy as np
 import ABR
 import ABR_
-
-# path setting
-fig1 = plt.figure(dpi=300, figsize=(20, 12), constrained_layout=True)
-fig2 = plt.figure(dpi=300, figsize=(20, 12), constrained_layout=True)
-fig3 = plt.figure(dpi=300, figsize=(20, 12), constrained_layout=True)
-fig4 = plt.figure(dpi=300, figsize=(20, 12), constrained_layout=True)
-
 
 def test(user_id):
 
@@ -24,16 +16,17 @@ def test(user_id):
     # video_size_file = '/home/game/video_size_'      #video trace path setting,
     # LogFile_Path = "/home/game/log/"                #log file trace path setting,
 
-    TRAIN_TRACES = './network_trace/'  # train trace path setting,
-    # video_size_file = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'  # video trace path setting,
-    # video_size_file = './video_trace/Fengtimo_2018_11_3/frame_trace_'  # video trace path setting,
-    video_size_file = './video_trace/YYF_2018_08_12/frame_trace_'  # video trace path setting,
-    print(video_size_file)
+    TRAIN_TRACES = './test_network/'  # train trace path setting,
+    video_size_file = './video_trace/AsianCup_China_Uzbekistan/frame_trace_'  # video trace path setting,
+    # video_size_file = './video_trace/Fengtimo_201z8_11_3/frame_trace_'  # video trace path setting,
+    # video_size_file = './video_trace/YYF_2018_08_12/frame_trace_'  # video trace path setting,
     LogFile_Path = "./log/"  # log file trace path setting,
     # Debug Mode: if True, You can see the debug info in the logfile
     #             if False, no log ,but the training speed is high
-    Data_Path = './data/'
+    Data_Path = './data_lstm_ac/'
     DEBUG = False
+    save_data = True
+    origin_abr = False
     # load the trace
     all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(TRAIN_TRACES)
     # random_seed
@@ -58,7 +51,10 @@ def test(user_id):
                                     logfile_path=LogFile_Path,
                                     VIDEO_SIZE_FILE=video_size_file,
                                     Debug=DEBUG)
-    abr = ABR.Algorithm()
+    if origin_abr:
+        abr = ABR_.Algorithm()
+    else :
+        abr = ABR.Algorithm()
     abr_init = abr.Initial()
 
     BIT_RATE = [500.0, 850.0, 1200.0, 1850.0]  # kpbs
@@ -94,15 +90,11 @@ def test(user_id):
     S_cdn_flag = [0] * past_frame_num
     # params setting
 
-    position = 0
+    position = 1
     list_bit_rate = []
     list_delay = []
     list_rebuf = []
     list_bufferSize = []
-    sum_rebuf = 0
-    S_Gop_delay = []
-    S_Gop_rebuf = []
-    S_Gop_bufferSize = []
 
     while True:
         reward_frame = 0
@@ -152,12 +144,9 @@ def test(user_id):
         S_buffer_flag.append(buffer_flag)
         S_cdn_flag.append(cdn_flag)
 
-        sum_rebuf += rebuf #总卡顿时间
-        S_Gop_delay.append(end_delay)  # 时延
-        S_Gop_rebuf.append(rebuf)  # 卡顿
-        S_Gop_bufferSize.append(buffer_size)  # 缓存区
-        if buffer_size == 0:
-            times_rebuf += 1
+        list_delay.append(end_delay)  # 时延
+        list_rebuf.append(rebuf)  # 卡顿
+        list_bufferSize.append(buffer_size)  # 缓存区
         # QOE setting
         if not cdn_flag:
             reward_frame = frame_time_len * float(
@@ -185,44 +174,13 @@ def test(user_id):
 
             # target_buffer 缓冲区阈值（Target Buffer），当视频播放产生卡顿后，只有当客户端缓冲区重新达到该缓冲区阈值时，才可以再次进行播放。
             # ------------------------------------------- End  -------------------------------------------
-            if position < 5:
-                list_delay += S_Gop_delay
-                list_rebuf += S_Gop_rebuf
-                list_bufferSize += S_Gop_bufferSize
-                # list_delay.append(np.average(S_Gop_delay))
-                # list_rebuf.append(sum(S_Gop_rebuf))
-                # list_bufferSize.append(np.average(S_Gop_bufferSize))
-                # times_rebuf += S_Gop_bufferSize.count(0)
-                S_Gop_delay.clear()
-                S_Gop_rebuf.clear()
-                S_Gop_bufferSize.clear()
         if end_of_video:
             print("video count", video_count, reward_all)
             # print("video count", video_count, reward_all, np.average(list_bit_rate))
-            reward_all_sum += reward_all
+            reward_all_sum += reward_all / 1000
             video_count += 1
-            if video_count >= len(all_file_names):
-                break
-            cnt = 0
-            last_bit_rate = 0
-            reward_all = 0
-            bit_rate = 0
-            target_buffer = 0
 
-            S_time_interval = [0] * past_frame_num
-            S_send_data_size = [0] * past_frame_num
-            S_chunk_len = [0] * past_frame_num
-            S_rebuf = [0] * past_frame_num
-            S_buffer_size = [0] * past_frame_num
-            S_end_delay = [0] * past_frame_num
-            S_chunk_size = [0] * past_frame_num
-            S_play_time_len = [0] * past_frame_num
-            S_decision_flag = [0] * past_frame_num
-            S_decision_flag = [0] * past_frame_num
-            S_buffer_flag = [0] * past_frame_num
-            S_cdn_flag = [0] * past_frame_num
-
-            if position < 5:
+            if save_data:
                 with open(Data_Path+'bit_rate'+str(position)+'.csv', 'a', encoding='utf-8') as f1:
                     f1.write('bitrate\n')
                     for i in range(len(list_bit_rate)):
@@ -247,19 +205,41 @@ def test(user_id):
                         info = str(list_bufferSize[i]) + '\n'
                         f4.write(info)
                     f4.flush()
-                print("总卡顿次数", times_rebuf, "次")
 
-                times_rebuf = 0
+                position += 1
+
                 list_rebuf.clear()
                 list_delay.clear()
                 list_bufferSize.clear()
                 list_bit_rate.clear()
 
-                position = position + 1
+
+            if video_count >= len(all_file_names):
+                break
+            cnt = 0
+            last_bit_rate = 0
+            reward_all = 0
+            bit_rate = 0
+            target_buffer = 0
+
+            S_time_interval = [0] * past_frame_num
+            S_send_data_size = [0] * past_frame_num
+            S_chunk_len = [0] * past_frame_num
+            S_rebuf = [0] * past_frame_num
+            S_buffer_size = [0] * past_frame_num
+            S_end_delay = [0] * past_frame_num
+            S_chunk_size = [0] * past_frame_num
+            S_play_time_len = [0] * past_frame_num
+            S_decision_flag = [0] * past_frame_num
+            S_decision_flag = [0] * past_frame_num
+            S_buffer_flag = [0] * past_frame_num
+            S_cdn_flag = [0] * past_frame_num
+
+
         reward_all += reward_frame
 
-    return reward_all_sum/20
+    return reward_all_sum
 
 a = test("aaa")
 print(a)
-plt.show()
+
