@@ -8,6 +8,8 @@ data_analysis.ipynb
     用于分析运行online所记录的码率，延时等数据
     file_path
         =>指定要分析数据所在的文件夹
+LSTM.py
+    =>训练LSTM模型
 lstm_train.csv
     用于训练LSTM模型的数据，原network_trace的0
 network.ipynb
