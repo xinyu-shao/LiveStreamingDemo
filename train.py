@@ -1,5 +1,4 @@
 import joblib
-import tensorflow._api.v2.compat.v1 as tf
 
 import train_net as ac
 from LiveStreamingEnv import fixed_env
@@ -95,7 +94,6 @@ with tf.Session(config=config) as sess:
 
     # model training, just train 200 turn, avoid overfitting
 
-    tf.disable_eager_execution()
     # 导入所需的包
     file = "lstm_train.csv"
     # 导入数据
@@ -135,7 +133,7 @@ with tf.Session(config=config) as sess:
     model.fit(x_train, y_train, epochs=1, batch_size=1, verbose=2)
 
     model.save(LSTM_MODEL_DIR + 'lstm.h5')
-    joblib.dump(scaler, LSTM_MODEL_DIR + 'scaler.joblib')
+    joblib.dump(scaler, LSTM_MODEL_DIR + 'scaler.save')
     for turn in range(200):
         net_env = fixed_env.Environment(all_cooked_time=all_cooked_time,
                                         all_cooked_bw=all_cooked_bw,
@@ -205,7 +203,7 @@ with tf.Session(config=config) as sess:
 
                 state[4] = last_thr / 10.0
                 state[5] = thr_mean / 10.0
-                state[6] = predict_thr
+                state[6] = predict_thr / 10.0
 
                 state[7] = end_delay / 2.0
                 state[8] = rebuf_time_sum / 10.0

@@ -4,14 +4,11 @@
     For LiveStreaming Game'''
 import LiveStreamingEnv.fixed_env as fixed_env
 import LiveStreamingEnv.load_trace as load_trace
-
-import matplotlib.pyplot as plt
 import ABR
 import ABR_
 
 def test(user_id):
 
-    times_rebuf = 0
     # TRAIN_TRACES = '/home/game/test_sim_traces/'   #train trace path setting,
     # video_size_file = '/home/game/video_size_'      #video trace path setting,
     # LogFile_Path = "/home/game/log/"                #log file trace path setting,
@@ -25,7 +22,7 @@ def test(user_id):
     #             if False, no log ,but the training speed is high
     Data_Path = './data_lstm_ac/'
     DEBUG = False
-    save_data = True
+    save_data = False
     origin_abr = False
     # load the trace
     all_cooked_time, all_cooked_bw, all_file_names = load_trace.load_trace(TRAIN_TRACES)

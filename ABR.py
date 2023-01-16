@@ -5,17 +5,18 @@ import numpy as np
 
 ACTOR_LR_RATE = 0.0001
 CRITIC_LR_RATE = 0.001
-NN_MODEL = './model_with_lstm/train/nn_model_ep_180.ckpt'
+NN_MODEL = './model_with_lstm/train/nn_model_ep_1.ckpt'
 S_DIM = 10
 A_DIM = 4
 BIT_RATE = [500.0, 850.0, 1200.0, 1850.0]
 TARGET_BUFFER = [0.5, 1.0]
 B = [0, 1, 2, 3]
 T = [0, 0, 1, 1]
+
 tf.reset_default_graph()
 tf.disable_eager_execution()
 lstm_model = keras.models.load_model('./lstm_model/lstm.h5')
-scaler = joblib.load('./lstm_model/scaler.joblib')
+scaler = joblib.load('./lstm_model/scaler.save')
 
 def get_tend(input):
     mydata = [[x] for x in input]
@@ -28,7 +29,6 @@ def get_tend(input):
     predict = scaler.inverse_transform(predict)
 
     return predict[0][0]
-
 def get_time(S_rebuf, S_decision_flag):
     rebuf_time_sum = S_rebuf[-1]
     n = 7499
@@ -42,8 +42,7 @@ class Algorithm:
         self.buffer_size = 0
         self.bit_rate = 0
         self.target_buffer = 0
-        self.thr_record = np.zeros((4))
-
+        self.thr_record = np.zeros(4)
     def Initial(self):
         # Initail your session or something
         with tf.Session().as_default() as sess:
@@ -89,6 +88,7 @@ class Algorithm:
         last_thr = thr_record[-1]
         thr_mean = sum(thr_record) / len(thr_record)
         predict_thr = get_tend(thr_record)
+        # print(predict_thr)
 
         end_delay = S_end_delay[-1]
         rebuf_time_sum = get_time(S_rebuf, S_decision_flag)
@@ -101,13 +101,11 @@ class Algorithm:
 
         state[4] = last_thr / 10.0
         state[5] = thr_mean / 10.0
-        state[6] = predict_thr
+        state[6] = predict_thr / 10.0
 
         state[7] = end_delay / 2.0
         state[8] = rebuf_time_sum / 10.0
         state[9] = bit_rate / 5.0
-
-        # show(state)
 
         ac = actor.get_action(state)
         bit_rate = B[ac]
